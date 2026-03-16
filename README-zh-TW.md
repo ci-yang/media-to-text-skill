@@ -112,6 +112,32 @@ YouTube URL  ──→  yt-dlp 擷取       ──→  transcript.md  ──→ 
                    Claude + 範本
 ```
 
+### 🧠 Whisper 模型
+
+| | 說明 |
+|---|------|
+| **模型** | [`mlx-community/whisper-large-v3-turbo`](https://huggingface.co/mlx-community/whisper-large-v3-turbo) |
+| **大小** | ~1.5 GB |
+| **框架** | [MLX](https://github.com/ml-explore/mlx) — Apple 為 Apple Silicon 打造的 ML 框架 |
+| **存放位置** | `~/.cache/huggingface/hub/`（首次執行自動下載） |
+| **費用** | **完全免費** — 全程在本機 GPU 執行，不需要 API key |
+| **速度** | M4 Pro 上約 20 倍即時速度（1 小時音訊 ≈ 3 分鐘） |
+
+> **首次執行提醒：** 模型（~1.5 GB）會在第一次使用時自動從 Hugging Face 下載，之後直接使用快取版本。
+
+<details>
+<summary><b>可替換模型</b></summary>
+
+可在 `scripts/media-to-text.sh` 中修改模型：
+
+| 模型 | 大小 | 速度 | 精確度 | 適用場景 |
+|------|------|------|--------|---------|
+| `whisper-large-v3-turbo` | 1.5 GB | ⚡ 快 | ✅ 高 | **預設 — 最佳平衡** |
+| `whisper-large-v3` | 3.1 GB | 🐢 較慢 | ✅✅ 最高 | 需要最高精確度 |
+| `whisper-base` | 142 MB | ⚡⚡ 最快 | ⚠️ 較低 | 記憶體不足 / 快速草稿 |
+
+</details>
+
 ### 🎯 Whisper 精準度的秘密
 
 | 技巧 | 解決什麼問題 | 影響程度 |

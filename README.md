@@ -103,6 +103,32 @@ Local audio  ──→  MLX Whisper GPU   ──→  whisper_raw.json
                   Claude + Template
 ```
 
+### 🧠 Whisper Model
+
+| | Detail |
+|---|--------|
+| **Model** | [`mlx-community/whisper-large-v3-turbo`](https://huggingface.co/mlx-community/whisper-large-v3-turbo) |
+| **Size** | ~1.5 GB |
+| **Framework** | [MLX](https://github.com/ml-explore/mlx) — Apple's ML framework for Apple Silicon |
+| **Storage** | `~/.cache/huggingface/hub/` (auto-downloaded on first run) |
+| **Cost** | **Free** — runs entirely on local GPU, no API key needed |
+| **Speed** | ~20x realtime on M4 Pro (1 hour audio ≈ 3 min) |
+
+> **First run note:** The model (~1.5 GB) will be automatically downloaded from Hugging Face on first use. Subsequent runs use the cached version instantly.
+
+<details>
+<summary><b>Alternative models</b></summary>
+
+You can switch models by editing `scripts/media-to-text.sh`:
+
+| Model | Size | Speed | Accuracy | Use Case |
+|-------|------|-------|----------|----------|
+| `whisper-large-v3-turbo` | 1.5 GB | ⚡ Fast | ✅ High | **Default — best balance** |
+| `whisper-large-v3` | 3.1 GB | 🐢 Slower | ✅✅ Highest | Maximum accuracy needed |
+| `whisper-base` | 142 MB | ⚡⚡ Fastest | ⚠️ Lower | Low RAM / quick draft |
+
+</details>
+
 ### Key Parameters
 
 | Parameter | Value | Why |
