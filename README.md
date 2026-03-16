@@ -1,28 +1,45 @@
-# Media-to-Text Skill
+<div align="center">
 
-> Convert any video or audio into accurate Traditional Chinese transcripts + structured summaries, powered by MLX Whisper on Apple Silicon.
+# 🎙️ Media-to-Text Skill
+
+**Convert any video or audio into accurate Traditional Chinese transcripts + structured summaries**
+
+*Powered by MLX Whisper on Apple Silicon — fast, free, local.*
+
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-macOS%20Apple%20Silicon-000000?logo=apple&logoColor=white)](https://support.apple.com/en-us/116943)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-Skill-7C3AED?logo=anthropic&logoColor=white)](https://claude.ai/claude-code)
+[![MLX](https://img.shields.io/badge/MLX-Whisper-FF6F00?logo=apple&logoColor=white)](https://github.com/ml-explore/mlx-examples)
+[![OpenCC](https://img.shields.io/badge/OpenCC-s2twp-E34F26)](https://github.com/BYVoid/OpenCC)
 
 [繁體中文說明](./README-zh-TW.md)
 
-![Workflow](./docs/workflow-flow-en.png)
+<img src="./docs/workflow-flow-en.png" alt="Workflow" width="700" />
 
-## Features
+</div>
 
-- **Multi-source input**: YouTube URLs, local video (mp4/mkv/avi/mov), local audio (mp3/m4a/wav/flac)
-- **Local GPU transcription**: MLX Whisper large-v3-turbo on Apple Silicon (~20x realtime on M4 Pro)
-- **Traditional Chinese optimized**: OpenCC s2twp conversion with Taiwan-specific terminology
-- **8 scene templates**: Auto-detect or manually select — meeting, interview, lecture, brainstorm, client visit, podcast, one-on-one, general
-- **Claude Code Skill**: Full integration as a Claude Code skill with `/media-to-text` command
-- **Optional publishing**: Notion database + NotebookLM notebook via MCP
+---
 
-## Requirements
+## ✨ Features
+
+| | Feature | Description |
+|---|---------|-------------|
+| 🎬 | **Multi-source input** | YouTube URLs, local video (mp4/mkv/avi/mov), local audio (mp3/m4a/wav/flac) |
+| ⚡ | **Local GPU transcription** | MLX Whisper large-v3-turbo on Apple Silicon (~20x realtime on M4 Pro) |
+| 🇹🇼 | **Traditional Chinese optimized** | OpenCC s2twp with Taiwan-specific terminology |
+| 📋 | **8 scene templates** | Auto-detect or manually select — meeting, interview, lecture, brainstorm, client, podcast, 1-on-1, general |
+| 🤖 | **Claude Code Skill** | Full integration with `/media-to-text` command |
+| 📤 | **Optional publishing** | Notion database + NotebookLM notebook via MCP |
+
+## 📦 Requirements
 
 - macOS with Apple Silicon (M1/M2/M3/M4)
 - 16GB RAM minimum (24GB+ recommended)
 - Python 3.10+
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp) and [ffmpeg](https://ffmpeg.org/)
 
-## Quick Start
+## 🚀 Quick Start
 
 ### Installation
 
@@ -55,10 +72,10 @@ bash scripts/media-to-text.sh https://youtube.com/watch?v=xxx
 bash scripts/media-to-text.sh ~/meeting.m4a ./output/my-meeting
 ```
 
-## Templates
+## 📑 Templates
 
 | Template | Name | Use Case |
-|----------|------|----------|
+|:--------:|------|----------|
 | `general` | 📝 General Summary | Default when type is unclear |
 | `meeting` | 📋 Meeting Notes | Team meetings, standups |
 | `interview` | 🎯 Interview Summary | Job interviews, evaluations |
@@ -68,38 +85,49 @@ bash scripts/media-to-text.sh ~/meeting.m4a ./output/my-meeting
 | `podcast` | 🎙️ Podcast/Interview | Shows, discussions |
 | `one_on_one` | 👥 One-on-One | Manager 1:1s, check-ins |
 
-## Architecture
+## 🏗️ Architecture
 
-![Architecture](./docs/skill-architecture-en.png)
+<div align="center">
+<img src="./docs/skill-architecture-en.png" alt="Architecture" width="700" />
+</div>
 
 ### How It Works
 
-1. **Extract**: yt-dlp (URLs) or ffmpeg (local files) → 16kHz mono WAV
-2. **Transcribe**: MLX Whisper on local GPU → OpenCC s2twp for Traditional Chinese
-3. **Summarize**: Claude LLM with template-based structured generation
-4. **Publish** (optional): Notion MCP + NotebookLM CLI
+```
+📥 Input          🔄 Process              📄 Output          📤 Publish
+─────────        ──────────────          ─────────          ─────────
+YouTube URL  ──→  yt-dlp extract    ──→  transcript.md  ──→  Notion
+Local video  ──→  ffmpeg → 16kHz WAV ─→  transcript.txt     NotebookLM
+Local audio  ──→  MLX Whisper GPU   ──→  whisper_raw.json
+                  OpenCC s2twp      ──→  summary.md
+                  Claude + Template
+```
 
 ### Key Parameters
 
 | Parameter | Value | Why |
-|-----------|-------|-----|
+|-----------|:-----:|-----|
 | `language` | `"zh"` | Force Chinese recognition, prevent misdetection |
 | `condition_on_previous_text` | `False` | **Prevent hallucination** — stops error accumulation |
-| `initial_prompt` | Traditional Chinese hint | Guide model toward Traditional Chinese + English terms |
+| `initial_prompt` | TW Chinese hint | Guide model toward Traditional Chinese + English terms |
 | OpenCC profile | `s2twp` | Simplified → Traditional with Taiwan vocabulary |
 
-## Output
+## 📂 Output
 
 Each run produces in `./output/{date}_{title}/`:
 
-| File | Description |
-|------|-------------|
-| `transcript.md` | Timestamped transcript |
-| `transcript.txt` | Plain text (for LLM summarization) |
-| `whisper_raw.json` | Raw Whisper output |
-| `summary.md` | Structured summary |
+```
+output/2026-03-16_my-meeting/
+├── transcript.md        # Timestamped transcript
+├── transcript.txt       # Plain text (for LLM summarization)
+├── whisper_raw.json     # Raw Whisper output
+└── summary.md           # Structured summary
+```
 
-## Troubleshooting
+## 🔧 Troubleshooting
+
+<details>
+<summary><b>Common Issues</b></summary>
 
 | Problem | Solution |
 |---------|----------|
@@ -109,6 +137,18 @@ Each run produces in `./output/{date}_{title}/`:
 | Simplified Chinese in output | Ensure OpenCC installed with `s2twp` profile |
 | Repeated/hallucinated text | Verify `condition_on_previous_text=False` |
 
-## License
+</details>
 
-[MIT](./LICENSE)
+## 📄 License
+
+[MIT](./LICENSE) — free for personal and commercial use.
+
+---
+
+<div align="center">
+
+Made with ❤️ for the Traditional Chinese community
+
+**[Report Bug](https://github.com/ci-yang/media-to-text-skill/issues)** · **[Request Feature](https://github.com/ci-yang/media-to-text-skill/issues)**
+
+</div>
