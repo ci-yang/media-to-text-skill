@@ -4,7 +4,7 @@
 
 [繁體中文說明](./README-zh-TW.md)
 
-![Workflow](./docs/workflow-flow.png)
+![Workflow](./docs/workflow-flow-en.png)
 
 ## Features
 
@@ -70,7 +70,7 @@ bash scripts/media-to-text.sh ~/meeting.m4a ./output/my-meeting
 
 ## Architecture
 
-![Architecture](./docs/skill-architecture.png)
+![Architecture](./docs/skill-architecture-en.png)
 
 ### How It Works
 

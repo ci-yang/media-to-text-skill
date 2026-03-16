@@ -4,7 +4,7 @@
 
 [English](./README.md)
 
-![工作流程](./docs/workflow-flow.png)
+![工作流程](./docs/workflow-flow-zh.png)
 
 ## 功能特色
 
@@ -79,7 +79,7 @@ Skill 讀取逐字稿前 500 字，比對各範本的關鍵詞：
 
 ## 架構
 
-![架構圖](./docs/skill-architecture.png)
+![架構圖](./docs/skill-architecture-zh.png)
 
 ### 運作方式
 
