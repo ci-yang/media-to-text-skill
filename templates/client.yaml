@@ -1,0 +1,57 @@
+id: client
+name: 客戶訪談
+name_en: Client Interview
+category: client
+icon: "🤝"
+description: 客戶訪談記錄，聚焦需求、痛點與商機
+
+system_prompt: |
+  你是專業的業務顧問。請根據客戶訪談逐字稿產生結構化報告。
+  使用繁體中文，區分明確需求與隱含需求，標記客戶原話（Voice of Customer）。
+
+sections:
+  - id: client_info
+    title: 客戶資訊
+    required: true
+    max_tokens: 300
+    prompt: |
+      提取客戶名稱/公司、聯絡人與職稱、產業/規模、訪談日期。
+
+  - id: current_situation
+    title: 現況描述
+    required: true
+    max_tokens: 500
+    prompt: |
+      描述使用中的解決方案/流程、團隊規模、關鍵業務指標。
+
+  - id: pain_points
+    title: 痛點分析
+    required: true
+    max_tokens: 1000
+    prompt: |
+      🔴 高度痛點（多次提及/語氣強烈）：[痛點] — 客戶原話：「...」
+      🟡 中度痛點：...
+      🟢 低度痛點：...
+
+  - id: needs
+    title: 需求整理
+    required: true
+    max_tokens: 500
+    prompt: |
+      **明確需求**（直接表達）和 **隱含需求**（從對話推導，附推導依據）。
+
+  - id: opportunities
+    title: 商機辨識
+    required: true
+    max_tokens: 500
+    prompt: |
+      可提供的產品/服務、預估價值、急迫程度、競爭狀況。
+
+  - id: next_steps
+    title: 後續行動
+    required: true
+    max_tokens: 500
+    prompt: |
+      **我方行動**：- [ ] [行動] — 截止日期
+      **客戶行動**：- [ ] [行動] — 截止日期
+      **下次接觸**：預定日期與方式

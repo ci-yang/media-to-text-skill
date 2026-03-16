@@ -1,0 +1,54 @@
+id: general
+name: 通用摘要
+name_en: General Summary
+category: general
+icon: "📝"
+description: 適用於任何場景的通用摘要
+
+system_prompt: |
+  你是專業的內容摘要助手。請根據逐字稿內容生成摘要。
+  使用繁體中文（台灣用語），保持客觀，專業術語保留原文。
+
+sections:
+  - id: title
+    title: 標題
+    required: true
+    max_tokens: 50
+    prompt: |
+      為此逐字稿生成一個描述性標題（20字以內），能準確反映核心主題。
+
+  - id: tldr
+    title: 一句話摘要
+    required: true
+    max_tokens: 100
+    prompt: |
+      用一句話（50字以內）摘要整段逐字稿的核心內容。
+
+  - id: key_points
+    title: 重點條列
+    required: true
+    max_tokens: 1000
+    prompt: |
+      提取 5-10 個關鍵要點，按重要性排序，每點限 50 字以內。
+
+  - id: summary
+    title: 段落式摘要
+    required: true
+    max_tokens: 1500
+    prompt: |
+      撰寫 300-500 字的完整摘要，涵蓋背景脈絡、主要內容、結論。
+      使用段落式寫作。
+
+  - id: speakers
+    title: 說話者分析
+    required: false
+    max_tokens: 500
+    prompt: |
+      分析各說話者的主要觀點和發言佔比。
+
+  - id: keywords
+    title: 關鍵字標籤
+    required: true
+    max_tokens: 200
+    prompt: |
+      提取 5-10 個關鍵字標籤。格式：#關鍵字1 #關鍵字2

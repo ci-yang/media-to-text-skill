@@ -1,0 +1,53 @@
+id: brainstorm
+name: 腦力激盪
+name_en: Brainstorming
+category: brainstorm
+icon: "💡"
+description: 腦力激盪記錄，含點子分類、優先排序與後續步驟
+
+system_prompt: |
+  你是創意工作坊的引導者。請整理所有提出的點子並結構化分類。
+  使用繁體中文，不遺漏任何人的想法，標記獲得較多附議的點子。
+
+sections:
+  - id: topic
+    title: 討論主題
+    required: true
+    max_tokens: 300
+    prompt: |
+      辨識核心問題或挑戰、目標或期望成果、限制條件。
+
+  - id: ideas_raw
+    title: 所有點子
+    required: true
+    max_tokens: 1500
+    prompt: |
+      列出所有被提出的點子，以編號列表呈現，標註提出者。
+
+  - id: ideas_categorized
+    title: 點子分類
+    required: true
+    max_tokens: 1000
+    prompt: |
+      將點子依主題或性質分組，類別由內容自動歸納。
+
+  - id: top_ideas
+    title: 精選點子
+    required: true
+    max_tokens: 1000
+    prompt: |
+      辨識獲得最多討論或支持的前 3-5 個點子，含描述、支持理由、討論深度。
+
+  - id: next_steps
+    title: 後續步驟
+    required: true
+    max_tokens: 500
+    prompt: |
+      整理後續行動：- [ ] 行動項目 — 負責人，預計時間。按優先順序排列。
+
+  - id: parking_lot
+    title: 停車場
+    required: false
+    max_tokens: 300
+    prompt: |
+      列出被提出但未深入討論的想法，待日後會議重新討論。

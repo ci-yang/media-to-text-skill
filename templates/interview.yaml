@@ -1,0 +1,57 @@
+id: interview
+name: 面試摘要
+name_en: Interview Summary
+category: interview
+icon: "🎯"
+description: 求職面試的結構化摘要，含問答記錄、能力評估與錄用建議
+
+system_prompt: |
+  你是經驗豐富的人資專家。請根據面試逐字稿產生客觀、專業的面試摘要。
+  使用繁體中文，客觀記錄，標記具體例子和數據。
+
+sections:
+  - id: candidate_info
+    title: 候選人資訊
+    required: true
+    max_tokens: 300
+    prompt: |
+      提取候選人姓名、應徵職位、相關經歷背景、面試日期與面試官。
+
+  - id: questions_answers
+    title: 問答記錄
+    required: true
+    max_tokens: 2000
+    prompt: |
+      列出面試中的主要問題與回答摘要：
+      **Q1: [問題]**
+      A: [回答摘要，150字以內]
+      關鍵詞：[從回答中提取]
+
+  - id: technical_assessment
+    title: 技術能力評估
+    required: true
+    max_tokens: 500
+    prompt: |
+      評估技術技能、具體專案成就、問題解決能力。使用 ⭐ 1-5 星評等。
+
+  - id: soft_skills
+    title: 軟實力評估
+    required: true
+    max_tokens: 500
+    prompt: |
+      評估溝通表達、邏輯思維、團隊合作、學習意願、壓力應對。每項 ⭐ 1-5 星。
+
+  - id: strengths_concerns
+    title: 優勢與疑慮
+    required: true
+    max_tokens: 500
+    prompt: |
+      ✅ 優勢：[具體優勢及證據]
+      ⚠️ 疑慮：[具體疑慮及依據]
+
+  - id: recommendation
+    title: 錄用建議
+    required: true
+    max_tokens: 300
+    prompt: |
+      綜合評估：推薦等級（強烈推薦/推薦/待考慮/不推薦）、理由、建議深入了解的面向。

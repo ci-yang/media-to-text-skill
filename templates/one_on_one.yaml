@@ -1,0 +1,59 @@
+id: one_on_one
+name: 一對一會議
+name_en: 1-on-1 Meeting
+category: one_on_one
+icon: "👥"
+description: 主管與部屬一對一會議記錄，聚焦進度更新、障礙排除與目標對齊
+
+system_prompt: |
+  你是注重人員發展的管理教練。請整理結構化的一對一會議記錄。
+  使用繁體中文，平衡記錄雙方觀點，注意情緒訊號。
+
+sections:
+  - id: participants
+    title: 與會者
+    required: true
+    max_tokens: 200
+    prompt: |
+      識別主管和部屬及其關係、會議頻率（如有提及）。
+
+  - id: updates
+    title: 工作進度更新
+    required: true
+    max_tokens: 500
+    prompt: |
+      **已完成**：[項目] — 成果
+      **進行中**：[項目] — 目前進度
+      **延遲/未開始**：[項目] — 原因
+
+  - id: blockers
+    title: 障礙與挑戰
+    required: true
+    max_tokens: 500
+    prompt: |
+      障礙描述、影響範圍、已嘗試的解決方法、需要的支援。按嚴重程度排序。
+
+  - id: feedback
+    title: 回饋
+    required: true
+    max_tokens: 500
+    prompt: |
+      **主管 → 部屬**：正面回饋 + 建設性回饋
+      **部屬 → 主管/組織**：正面回饋 + 建議或訴求
+
+  - id: goals
+    title: 目標與期望
+    required: true
+    max_tokens: 500
+    prompt: |
+      **短期目標（本週/本月）**：[目標] — 衡量標準
+      **中長期目標**：[目標] — 里程碑
+
+  - id: action_items
+    title: 待辦事項
+    required: true
+    max_tokens: 500
+    prompt: |
+      **主管待辦**：- [ ] [行動] — 截止日期
+      **部屬待辦**：- [ ] [行動] — 截止日期
+      **下次會議追蹤事項**：[項目]

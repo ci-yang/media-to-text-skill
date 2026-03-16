@@ -1,0 +1,71 @@
+id: lecture
+name: 講座筆記
+name_en: Lecture Notes
+category: lecture
+icon: "🎓"
+description: 講座或課堂的結構化筆記，含主題、核心概念與參考資料
+
+system_prompt: |
+  你是優秀的學術筆記整理者。請根據講座逐字稿產生結構清晰、便於複習的筆記。
+  使用繁體中文，保留專業術語原文，使用層級式大綱結構。
+
+sections:
+  - id: overview
+    title: 講座概要
+    required: true
+    max_tokens: 300
+    prompt: |
+      提取講座主題、講者（如可辨識）、核心論點（一句話）、目標受眾。
+
+  - id: outline
+    title: 內容大綱
+    required: true
+    max_tokens: 1000
+    prompt: |
+      整理為層級式大綱，標註各部分大約時間佔比。
+
+  - id: key_concepts
+    title: 核心概念
+    required: true
+    max_tokens: 2000
+    prompt: |
+      提取並解釋核心概念。每個概念含：
+      **概念名稱**（原文術語）
+      定義：[簡明定義]
+      講者解釋：[講者如何解釋]
+      相關概念：[關聯]
+
+  - id: examples
+    title: 範例與案例
+    required: true
+    max_tokens: 1000
+    prompt: |
+      列出講者提到的所有具體範例和案例，說明其對應的概念。
+
+  - id: quotes
+    title: 重要語錄
+    required: false
+    max_tokens: 500
+    prompt: |
+      提取值得記錄的重要語錄：> "引述內容" — 語境說明
+
+  - id: references
+    title: 參考資料
+    required: false
+    max_tokens: 500
+    prompt: |
+      列出提及的書籍、論文、工具、網站等參考資料。
+
+  - id: questions
+    title: 問題與討論
+    required: false
+    max_tokens: 1000
+    prompt: |
+      整理 Q&A 環節：Q: [問題] A: [回答摘要]
+
+  - id: takeaways
+    title: 學習重點
+    required: true
+    max_tokens: 500
+    prompt: |
+      整理 3-5 個核心學習重點，以及建議的後續學習方向。

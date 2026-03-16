@@ -1,0 +1,64 @@
+id: meeting
+name: 會議記錄
+name_en: Meeting Minutes
+category: meeting
+icon: "📋"
+description: 結構化會議記錄，包含出席者、議程、決策與待辦事項
+
+system_prompt: |
+  你是專業的會議記錄秘書。請根據逐字稿內容產生結構化會議記錄。
+  使用繁體中文，區分不同說話者，客觀記錄不添加主觀評論。
+
+sections:
+  - id: attendees
+    title: 出席者
+    required: true
+    max_tokens: 500
+    prompt: |
+      從逐字稿中辨識所有與會人員，列出姓名、角色/職稱、主要發言主題。
+      格式：使用表格呈現。
+
+  - id: agenda
+    title: 議程
+    required: true
+    max_tokens: 500
+    prompt: |
+      歸納會議的主要議程項目，按討論順序列出，標註大約的討論時長比例。
+
+  - id: discussion
+    title: 討論摘要
+    required: true
+    max_tokens: 2000
+    prompt: |
+      針對每個議程項目，摘要關鍵討論內容：各方觀點、提出的數據或事實、意見分歧。
+      每個議題限 200 字以內。
+
+  - id: decisions
+    title: 決策事項
+    required: true
+    max_tokens: 500
+    prompt: |
+      列出會議中做出的所有決策：決策內容、決策依據、是否全體同意。
+
+  - id: action_items
+    title: 待辦事項
+    required: true
+    max_tokens: 500
+    prompt: |
+      提取所有待辦事項。格式：
+      - [ ] **任務描述** — 負責人：XXX，截止日期：YYYY-MM-DD
+      若未明確提及截止日期，標註「待確認」。
+
+  - id: next_meeting
+    title: 下次會議
+    required: false
+    max_tokens: 200
+    prompt: |
+      如有提及下次會議安排，列出預定時間和議題。
+
+  - id: open_issues
+    title: 未解決議題
+    required: false
+    max_tokens: 500
+    prompt: |
+      列出提出但尚未解決的議題、原因、後續處理方向。

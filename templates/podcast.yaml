@@ -1,0 +1,71 @@
+id: podcast
+name: 播客/訪談
+name_en: Podcast/Interview
+category: podcast
+icon: "🎙️"
+description: 播客或訪談節目的結構化摘要，含說話者、主題與精彩片段
+
+system_prompt: |
+  你是專業的播客內容編輯。請產生吸引人且資訊豐富的節目摘要。
+  使用繁體中文，保留說話者個人風格，突出最有價值的觀點。
+
+sections:
+  - id: show_info
+    title: 節目資訊
+    required: true
+    max_tokens: 300
+    prompt: |
+      提取節目/頻道名稱、本集主題、主持人、來賓。
+
+  - id: guest_bio
+    title: 來賓簡介
+    required: true
+    max_tokens: 300
+    prompt: |
+      從逐字稿整理來賓的專業領域、重要經歷、受邀原因。
+
+  - id: topics
+    title: 討論主題
+    required: true
+    max_tokens: 500
+    prompt: |
+      按出現順序列出討論主題：1. [主題] — 簡述（50字以內）
+
+  - id: key_insights
+    title: 關鍵見解
+    required: true
+    max_tokens: 1500
+    prompt: |
+      提取 5-10 個最有價值的見解：
+      💡 **見解**：[觀點摘要] — 背景：[為何提出]
+      按重要性排序。
+
+  - id: highlights
+    title: 精彩片段
+    required: true
+    max_tokens: 500
+    prompt: |
+      標記精彩片段：⭐ [片段描述] — 為何精彩
+
+  - id: quotes
+    title: 金句摘錄
+    required: false
+    max_tokens: 500
+    prompt: |
+      > "引述內容" — 說話者。每句附語境說明。
+
+  - id: resources
+    title: 提及資源
+    required: false
+    max_tokens: 500
+    prompt: |
+      📚 書籍 / 🔧 工具 / 🔗 網站 / 👤 推薦人物
+
+  - id: summary
+    title: 一句話摘要
+    required: true
+    max_tokens: 500
+    prompt: |
+      **一句話版（50字）**：社群媒體標題
+      **短版（150字）**：節目描述
+      **完整版（300字）**：部落格文章
