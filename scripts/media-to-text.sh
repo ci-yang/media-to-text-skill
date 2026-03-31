@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# media-to-text.sh - 媒體轉文字一鍵腳本
+# media-to-text.sh - 媒體轉文字一鍵腳本（跨平台：macOS Apple Silicon + Linux）
 # 用法: ./media-to-text.sh <input> [output_dir]
 #   input: YouTube URL 或本地影片/音訊路徑
 #   output_dir: 輸出目錄（預設 ./output/{date}_{title}）
@@ -49,17 +49,43 @@ OUTPUT_DIR="${2:-}"
 # ── 1. 依賴檢查 ───────────────────────────────────────────
 step "🔍 檢查依賴..."
 
+# 平台偵測
+OS="$(uname -s)"
+ARCH="$(uname -m)"
+if [[ "$OS" == "Darwin" && "$ARCH" == "arm64" ]]; then
+    PLATFORM="macos-arm64"
+elif [[ "$OS" == "Linux" ]]; then
+    PLATFORM="linux"
+else
+    PLATFORM="other"
+fi
+ok "平台: ${PLATFORM} (${OS} ${ARCH})"
+
 YTDLP="$(command -v yt-dlp 2>/dev/null || true)"
 FFMPEG="$(command -v ffmpeg 2>/dev/null || true)"
 
-[[ -n "$YTDLP" ]]  && ok "yt-dlp: ${YTDLP}"  || fail "找不到 yt-dlp，請執行: brew install yt-dlp"
-[[ -n "$FFMPEG" ]]  && ok "ffmpeg: ${FFMPEG}"  || fail "找不到 ffmpeg，請執行: brew install ffmpeg"
+if [[ "$PLATFORM" == "linux" ]]; then
+    [[ -n "$YTDLP" ]]  && ok "yt-dlp: ${YTDLP}"  || fail "找不到 yt-dlp，請執行: sudo apt install yt-dlp 或 pip install yt-dlp"
+    [[ -n "$FFMPEG" ]]  && ok "ffmpeg: ${FFMPEG}"  || fail "找不到 ffmpeg，請執行: sudo apt install ffmpeg"
+else
+    [[ -n "$YTDLP" ]]  && ok "yt-dlp: ${YTDLP}"  || fail "找不到 yt-dlp，請執行: brew install yt-dlp"
+    [[ -n "$FFMPEG" ]]  && ok "ffmpeg: ${FFMPEG}"  || fail "找不到 ffmpeg，請執行: brew install ffmpeg"
+fi
+
 [[ -d "$VENV_DIR" ]] && ok "Python venv: ${VENV_DIR}/" || fail "找不到 Python venv: ${VENV_DIR}，請先執行: bash ${REPO_DIR}/install.sh"
 [[ -x "$PYTHON" ]]  || fail "找不到 Python 執行檔: ${PYTHON}"
 
-# 檢查 Python 套件
-"$PYTHON" -c "import mlx_whisper" 2>/dev/null || fail "缺少 mlx_whisper，請執行: ${VENV_DIR}/bin/pip install mlx-whisper"
-"$PYTHON" -c "import opencc"      2>/dev/null || fail "缺少 opencc，請執行: ${VENV_DIR}/bin/pip install opencc-python-reimplemented"
+# 檢查 Whisper 後端（依平台）
+if [[ "$PLATFORM" == "macos-arm64" ]]; then
+    "$PYTHON" -c "import mlx_whisper" 2>/dev/null && ok "mlx-whisper (Apple Silicon)" \
+        || fail "缺少 mlx_whisper，請執行: ${VENV_DIR}/bin/pip install mlx-whisper"
+else
+    "$PYTHON" -c "import faster_whisper" 2>/dev/null && ok "faster-whisper (CUDA/CPU)" \
+        || fail "缺少 faster_whisper，請執行: ${VENV_DIR}/bin/pip install faster-whisper"
+fi
+
+"$PYTHON" -c "import opencc" 2>/dev/null && ok "opencc" \
+    || fail "缺少 opencc，請執行: ${VENV_DIR}/bin/pip install opencc-python-reimplemented"
 
 # ── 2. 輸入辨識與音訊取得 ─────────────────────────────────
 WORK_DIR="$(mktemp -d)"
@@ -88,10 +114,8 @@ is_audio() {
 if is_url "$INPUT"; then
     # ── YouTube / URL 下載 ──
     step "📥 下載影片音訊..."
-    # 取得標題
     TITLE="$(yt-dlp --get-title "$INPUT" 2>/dev/null | head -1 || echo "untitled")"
-    # 清理標題中的特殊字元
-    SAFE_TITLE="$(echo "$TITLE" | sed 's/[^a-zA-Z0-9\u4e00-\u9fff._-]/_/g; s/__*/_/g; s/^_//; s/_$//' | cut -c1-80)"
+    SAFE_TITLE="$(echo "$TITLE" | sed 's/[^a-zA-Z0-9._-]/_/g; s/__*/_/g; s/^_//; s/_$//' | cut -c1-80)"
 
     yt-dlp \
         -x --audio-format wav \
@@ -100,17 +124,15 @@ if is_url "$INPUT"; then
         "$INPUT" \
         || fail "yt-dlp 下載失敗，請確認 URL 是否正確"
 
-    # yt-dlp 輸出的檔名
     AUDIO_RAW_FILE="$(ls "${AUDIO_RAW}"* 2>/dev/null | head -1)"
     [[ -f "$AUDIO_RAW_FILE" ]] || fail "找不到下載的音訊檔案"
     ok "音訊下載完成: $(basename "$AUDIO_RAW_FILE")"
 
 elif is_video "$INPUT"; then
-    # ── 本地影片 → 擷取音訊 ──
     [[ -f "$INPUT" ]] || fail "找不到檔案: ${INPUT}"
     step "📥 擷取影片音訊..."
     TITLE="$(basename "${INPUT%.*}")"
-    SAFE_TITLE="$(echo "$TITLE" | sed 's/[^a-zA-Z0-9\u4e00-\u9fff._-]/_/g; s/__*/_/g; s/^_//; s/_$//' | cut -c1-80)"
+    SAFE_TITLE="$(echo "$TITLE" | sed 's/[^a-zA-Z0-9._-]/_/g; s/__*/_/g; s/^_//; s/_$//' | cut -c1-80)"
     AUDIO_RAW_FILE="${AUDIO_RAW}.wav"
 
     ffmpeg -y -i "$INPUT" -vn -acodec pcm_s16le "${AUDIO_RAW_FILE}" \
@@ -119,11 +141,10 @@ elif is_video "$INPUT"; then
     ok "音訊擷取完成: $(basename "$AUDIO_RAW_FILE")"
 
 elif is_audio "$INPUT"; then
-    # ── 本地音訊 ──
     [[ -f "$INPUT" ]] || fail "找不到檔案: ${INPUT}"
     step "📥 讀取音訊檔案..."
     TITLE="$(basename "${INPUT%.*}")"
-    SAFE_TITLE="$(echo "$TITLE" | sed 's/[^a-zA-Z0-9\u4e00-\u9fff._-]/_/g; s/__*/_/g; s/^_//; s/_$//' | cut -c1-80)"
+    SAFE_TITLE="$(echo "$TITLE" | sed 's/[^a-zA-Z0-9._-]/_/g; s/__*/_/g; s/^_//; s/_$//' | cut -c1-80)"
     AUDIO_RAW_FILE="$INPUT"
     ok "音訊檔案: $(basename "$AUDIO_RAW_FILE")"
 
@@ -151,40 +172,17 @@ if [[ -z "$OUTPUT_DIR" ]]; then
 fi
 mkdir -p "$OUTPUT_DIR"
 
-# ── 5. MLX Whisper 轉錄 ──────────────────────────────────
-step "🎙️ MLX Whisper 轉錄中..."
+# ── 5. Whisper 轉錄（跨平台）─────────────────────────────
+step "🎙️ Whisper 轉錄中..."
 
 WHISPER_JSON="${OUTPUT_DIR}/whisper_raw.json"
 
-"$PYTHON" - "$AUDIO_WAV" "$WHISPER_JSON" <<'PYEOF'
-import sys
-import json
-import mlx_whisper
+"$PYTHON" "${SCRIPT_DIR}/transcribe.py" \
+    "$AUDIO_WAV" "$WHISPER_JSON" \
+    --language zh \
+    --initial-prompt "以下是繁體中文的錄音，可能包含英文術語。"
 
-audio_path = sys.argv[1]
-output_path = sys.argv[2]
-
-result = mlx_whisper.transcribe(
-    audio_path,
-    path_or_hf_repo="mlx-community/whisper-large-v3-turbo",
-    language="zh",
-    initial_prompt="以下是繁體中文的錄音，可能包含英文術語。",
-    condition_on_previous_text=False,
-    word_timestamps=True,
-    verbose=False,
-)
-
-# 儲存原始結果
-with open(output_path, "w", encoding="utf-8") as f:
-    json.dump(result, f, ensure_ascii=False, indent=2)
-
-# 輸出統計到 stderr 供 bash 讀取
-segments = result.get("segments", [])
-full_text = result.get("text", "")
-print(f"{len(segments)}\t{len(full_text)}", file=sys.stderr)
-PYEOF
-
-# 讀取統計（從上面的 python stderr）- 若失敗也不中斷
+# 讀取統計
 SEGMENTS="$(grep -c '"id"' "$WHISPER_JSON" 2>/dev/null || echo "?")"
 CHAR_COUNT="$("$PYTHON" -c "
 import json, sys
@@ -223,7 +221,6 @@ full_text = converter.convert(data.get("text", ""))
 
 
 def fmt_time(seconds: float) -> str:
-    """秒數轉 HH:MM:SS 格式"""
     h = int(seconds // 3600)
     m = int((seconds % 3600) // 60)
     s = int(seconds % 60)

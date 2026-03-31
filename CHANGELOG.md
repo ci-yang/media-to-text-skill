@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.2.0] - 2026-03-31
+
+### Added
+- **Linux support** via `faster-whisper` backend (CUDA GPU + CPU INT8 fallback)
+- Cross-platform transcription abstraction layer: `scripts/transcribe.py`
+  - macOS Apple Silicon → mlx-whisper (Metal GPU)
+  - Linux → faster-whisper (CUDA or CPU)
+  - Auto-detects backend, outputs unified JSON format
+- Platform detection in `install.sh` and `scripts/media-to-text.sh`
+
+### Changed
+- `install.sh` installs platform-appropriate Whisper backend automatically
+- `scripts/media-to-text.sh` uses `transcribe.py` instead of inline mlx_whisper code
+- Shell script dependency checks now show platform-specific install instructions
+
 ## [1.1.0] - 2026-03-31
 
 ### Added

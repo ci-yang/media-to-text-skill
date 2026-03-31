@@ -4,11 +4,11 @@
 
 **Convert any video or audio into accurate transcripts + structured summaries**
 
-*Powered by MLX Whisper on Apple Silicon — fast, free, local. Multi-language with bilingual output.*
+*Powered by MLX Whisper (macOS) and faster-whisper (Linux) — fast, free, local. Multi-language with bilingual output.*
 
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-macOS%20Apple%20Silicon-000000?logo=apple&logoColor=white)](https://support.apple.com/en-us/116943)
+[![Platform](https://img.shields.io/badge/Platform-macOS%20|%20Linux-000000?logo=apple&logoColor=white)](https://support.apple.com/en-us/116943)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Skill-7C3AED?logo=anthropic&logoColor=white)](https://claude.ai/claude-code)
 [![MLX](https://img.shields.io/badge/MLX-Whisper-FF6F00?logo=apple&logoColor=white)](https://github.com/ml-explore/mlx-examples)
 [![OpenCC](https://img.shields.io/badge/OpenCC-s2twp-E34F26)](https://github.com/BYVoid/OpenCC)
@@ -36,10 +36,15 @@
 
 ## 📦 Requirements
 
-- macOS with Apple Silicon (M1/M2/M3/M4)
-- 16GB RAM minimum (24GB+ recommended)
-- Python 3.10+
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) and [ffmpeg](https://ffmpeg.org/)
+### macOS (Apple Silicon)
+- M1/M2/M3/M4, 16GB RAM minimum (24GB+ recommended)
+- Python 3.10+, [yt-dlp](https://github.com/yt-dlp/yt-dlp), [ffmpeg](https://ffmpeg.org/)
+- Backend: `mlx-whisper` (Metal GPU acceleration)
+
+### Linux
+- NVIDIA GPU with CUDA recommended (CPU mode also supported)
+- Python 3.10+, yt-dlp, ffmpeg
+- Backend: `faster-whisper` (CUDA or CPU INT8)
 
 ## 🚀 Quick Start
 
@@ -133,14 +138,14 @@ Local audio  ──→  MLX Whisper GPU   ──→  whisper_raw.json
 
 ### 🧠 Whisper Model
 
-| | Detail |
-|---|--------|
-| **Model** | [`mlx-community/whisper-large-v3-turbo`](https://huggingface.co/mlx-community/whisper-large-v3-turbo) |
-| **Size** | ~1.5 GB |
-| **Framework** | [MLX](https://github.com/ml-explore/mlx) — Apple's ML framework for Apple Silicon |
-| **Storage** | `~/.cache/huggingface/hub/` (auto-downloaded on first run) |
-| **Cost** | **Free** — runs entirely on local GPU, no API key needed |
-| **Speed** | ~20x realtime on M4 Pro (1 hour audio ≈ 3 min) |
+| | macOS (MLX) | Linux (faster-whisper) |
+|---|-------------|----------------------|
+| **Model** | [`mlx-community/whisper-large-v3-turbo`](https://huggingface.co/mlx-community/whisper-large-v3-turbo) | `large-v3-turbo` (CTranslate2) |
+| **Size** | ~1.5 GB | ~1.5 GB |
+| **Framework** | [MLX](https://github.com/ml-explore/mlx) (Metal GPU) | [CTranslate2](https://github.com/OpenNMT/CTranslate2) (CUDA/CPU) |
+| **Storage** | `~/.cache/huggingface/hub/` | `~/.cache/huggingface/hub/` |
+| **Cost** | **Free** — local GPU | **Free** — local GPU/CPU |
+| **Speed** | ~20x realtime (M4 Pro) | ~20x+ realtime (CUDA), ~2-5x (CPU INT8) |
 
 > **First run note:** The model (~1.5 GB) will be automatically downloaded from Hugging Face on first use. Subsequent runs use the cached version instantly.
 
@@ -173,8 +178,9 @@ You can switch models by editing `scripts/media-to-text.sh`:
 | **Virtual environment** | `~/.claude/.venv/` |
 | **Python binary** | `~/.claude/.venv/bin/python` |
 | **Whisper model cache** | `~/.cache/huggingface/hub/` |
+| **Transcription backend** | `scripts/transcribe.py` (auto-detects mlx-whisper or faster-whisper) |
 
-> The global venv at `~/.claude/.venv` is used so the skill works from any project directory without per-project installation.
+> The global venv at `~/.claude/.venv` is used so the skill works from any project directory without per-project installation. `install.sh` auto-detects your platform and installs the correct backend.
 
 ## 📂 Output
 

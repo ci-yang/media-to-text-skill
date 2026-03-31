@@ -4,11 +4,11 @@
 
 **將任何影片或音訊轉換為精準逐字稿 + 結構化摘要**
 
-*使用 MLX Whisper 在 Apple Silicon 本機 GPU 上執行——快速、免費、完全離線。支援多語言偵測與雙語輸出。*
+*使用 MLX Whisper（macOS）和 faster-whisper（Linux）本機執行——快速、免費、完全離線。支援多語言偵測與雙語輸出。*
 
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/授權-MIT-yellow.svg)](./LICENSE)
-[![Platform](https://img.shields.io/badge/平台-macOS%20Apple%20Silicon-000000?logo=apple&logoColor=white)](https://support.apple.com/zh-tw/116943)
+[![Platform](https://img.shields.io/badge/平台-macOS%20|%20Linux-000000?logo=apple&logoColor=white)](https://support.apple.com/zh-tw/116943)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Skill-7C3AED?logo=anthropic&logoColor=white)](https://claude.ai/claude-code)
 [![MLX](https://img.shields.io/badge/MLX-Whisper-FF6F00?logo=apple&logoColor=white)](https://github.com/ml-explore/mlx-examples)
 [![OpenCC](https://img.shields.io/badge/OpenCC-s2twp-E34F26)](https://github.com/BYVoid/OpenCC)
@@ -36,10 +36,15 @@
 
 ## 📦 環境需求
 
-- macOS Apple Silicon（M1/M2/M3/M4）
-- 16GB RAM 以上（建議 24GB+）
-- Python 3.10+
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) 和 [ffmpeg](https://ffmpeg.org/)
+### macOS（Apple Silicon）
+- M1/M2/M3/M4，16GB RAM 以上（建議 24GB+）
+- Python 3.10+、[yt-dlp](https://github.com/yt-dlp/yt-dlp)、[ffmpeg](https://ffmpeg.org/)
+- 後端：`mlx-whisper`（Metal GPU 加速）
+
+### Linux
+- 建議 NVIDIA GPU + CUDA（也支援純 CPU 模式）
+- Python 3.10+、yt-dlp、ffmpeg
+- 後端：`faster-whisper`（CUDA 或 CPU INT8）
 
 ## 🚀 快速開始
 
@@ -141,14 +146,14 @@ YouTube URL  ──→  yt-dlp 擷取       ──→  transcript.md  ──→ 
 
 ### 🧠 Whisper 模型
 
-| | 說明 |
-|---|------|
-| **模型** | [`mlx-community/whisper-large-v3-turbo`](https://huggingface.co/mlx-community/whisper-large-v3-turbo) |
-| **大小** | ~1.5 GB |
-| **框架** | [MLX](https://github.com/ml-explore/mlx) — Apple 為 Apple Silicon 打造的 ML 框架 |
-| **存放位置** | `~/.cache/huggingface/hub/`（首次執行自動下載） |
-| **費用** | **完全免費** — 全程在本機 GPU 執行，不需要 API key |
-| **速度** | M4 Pro 上約 20 倍即時速度（1 小時音訊 ≈ 3 分鐘） |
+| | macOS (MLX) | Linux (faster-whisper) |
+|---|-------------|----------------------|
+| **模型** | [`mlx-community/whisper-large-v3-turbo`](https://huggingface.co/mlx-community/whisper-large-v3-turbo) | `large-v3-turbo`（CTranslate2） |
+| **大小** | ~1.5 GB | ~1.5 GB |
+| **框架** | [MLX](https://github.com/ml-explore/mlx)（Metal GPU） | [CTranslate2](https://github.com/OpenNMT/CTranslate2)（CUDA/CPU） |
+| **存放位置** | `~/.cache/huggingface/hub/` | `~/.cache/huggingface/hub/` |
+| **費用** | **完全免費** — 本機 GPU | **完全免費** — 本機 GPU/CPU |
+| **速度** | ~20x realtime（M4 Pro） | ~20x+（CUDA），~2-5x（CPU INT8） |
 
 > **首次執行提醒：** 模型（~1.5 GB）會在第一次使用時自動從 Hugging Face 下載，之後直接使用快取版本。
 
@@ -183,8 +188,9 @@ YouTube URL  ──→  yt-dlp 擷取       ──→  transcript.md  ──→ 
 | **虛擬環境** | `~/.claude/.venv/` |
 | **Python 執行檔** | `~/.claude/.venv/bin/python` |
 | **Whisper 模型快取** | `~/.cache/huggingface/hub/` |
+| **轉錄抽象層** | `scripts/transcribe.py`（自動偵測 mlx-whisper 或 faster-whisper） |
 
-> 使用 `~/.claude/.venv` 全域虛擬環境，讓 skill 可在任何專案目錄下使用，無需每個專案單獨安裝。
+> 使用 `~/.claude/.venv` 全域虛擬環境，讓 skill 可在任何專案目錄下使用，無需每個專案單獨安裝。`install.sh` 自動偵測平台並安裝正確的後端。
 
 ## 📂 輸出檔案
 
