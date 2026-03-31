@@ -2,9 +2,9 @@
 
 # 🎙️ Media-to-Text Skill
 
-**將任何影片或音訊轉換為精準繁體中文逐字稿 + 結構化摘要**
+**將任何影片或音訊轉換為精準逐字稿 + 結構化摘要**
 
-*使用 MLX Whisper 在 Apple Silicon 本機 GPU 上執行——快速、免費、完全離線。*
+*使用 MLX Whisper 在 Apple Silicon 本機 GPU 上執行——快速、免費、完全離線。支援多語言偵測與雙語輸出。*
 
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/授權-MIT-yellow.svg)](./LICENSE)
@@ -27,6 +27,8 @@
 |---|------|------|
 | 🎬 | **多來源輸入** | YouTube URL、本地影片（mp4/mkv/avi/mov）、本地音訊（mp3/m4a/wav/flac） |
 | ⚡ | **本機 GPU 轉錄** | MLX Whisper large-v3-turbo，M4 Pro 上約 20 倍即時速度 |
+| 🌐 | **多語言支援** | 自動偵測音訊語言，用原始語言轉錄 |
+| 🔄 | **雙語輸出** | 原文逐字稿 + 繁體中文翻譯版（透過 Claude Agent 翻譯） |
 | 🇹🇼 | **繁體中文最佳化** | OpenCC s2twp 轉換，使用台灣慣用詞（記憶體、程式、影片） |
 | 📋 | **8 種場景範本** | 自動偵測或手動選擇——會議、面試、講座、腦力激盪、客戶訪談、播客、一對一、通用 |
 | 🤖 | **Claude Code Skill** | 完整整合，支援 `/media-to-text` 指令 |
@@ -49,6 +51,8 @@ cd media-to-text-skill
 bash install.sh
 ```
 
+> **注意：** 依賴安裝到 `~/.claude/.venv`（全域虛擬環境），這樣 skill 可以在任何專案目錄下使用。Whisper 模型（~1.5 GB）快取在 `~/.cache/huggingface/hub/`。
+
 ### 作為 Claude Code Skill 使用（推薦）
 
 複製到你的專案 skill 目錄：
@@ -62,16 +66,37 @@ cp -r media-to-text-skill /path/to/your-project/.claude/skills/media-to-text
 ```
 /media-to-text https://youtube.com/watch?v=xxx
 /media-to-text ~/recordings/meeting.m4a --template meeting
-/media-to-text ~/Videos/lecture.mp4 --template lecture --publish notion
+/media-to-text https://youtube.com/watch?v=xxx --bilingual
+/media-to-text ~/Videos/lecture.mp4 --lang en --bilingual --template lecture
 ```
 
 ### 作為獨立腳本使用
 
 ```bash
-source .venv/bin/activate
 bash scripts/media-to-text.sh https://youtube.com/watch?v=xxx
 bash scripts/media-to-text.sh ~/meeting.m4a ./output/my-meeting
 ```
+
+## 🌐 多語言與雙語輸出
+
+### 運作原理
+
+1. **自動偵測** — Whisper 分析前 30 秒音訊片段辨識語言
+2. **原文轉錄** — 用偵測到的語言轉錄（英文音訊 → 英文逐字稿）
+3. **可選翻譯** — Claude Agent 翻譯為繁體中文（品質遠優於 Whisper 跨語言轉錄）
+
+### 使用範例
+
+| 輸入 | `--bilingual` | 輸出 |
+|------|:------------:|------|
+| 中文音訊 | 否 | `transcript.md`（繁體中文） |
+| 英文音訊 | 否 | `transcript_en.md`（純英文） |
+| 英文音訊 | 是 | `transcript_en.md` + `transcript.md`（中文翻譯） |
+| 日文音訊 | 是 | `transcript_ja.md` + `transcript.md`（中文翻譯） |
+
+### 為什麼不用 Whisper 跨語言轉錄？
+
+對英文音訊設 `language="zh"` 會產出大量亂碼。正確做法：用原始語言轉錄，再用 Claude Agent 翻譯。
 
 ## 📑 範本說明
 
@@ -108,7 +133,9 @@ Skill 讀取逐字稿前 500 字，比對各範本的關鍵詞：
 YouTube URL  ──→  yt-dlp 擷取       ──→  transcript.md  ──→  Notion
 本地影片      ──→  ffmpeg → 16kHz WAV ─→  transcript.txt      NotebookLM
 本地音訊      ──→  MLX Whisper GPU   ──→  whisper_raw.json
+                   語言偵測          ──→  transcript_{lang}.*
                    OpenCC s2twp      ──→  summary.md
+                   Claude Agent      ──→  （雙語翻譯）
                    Claude + 範本
 ```
 
@@ -142,11 +169,22 @@ YouTube URL  ──→  yt-dlp 擷取       ──→  transcript.md  ──→ 
 
 | 技巧 | 解決什麼問題 | 影響程度 |
 |------|------------|:-------:|
-| `language="zh"` | 防止語言誤判 | ⭐⭐⭐ |
+| `language` 匹配實際語言 | 防止跨語言亂碼 | ⭐⭐⭐⭐⭐ |
 | `condition_on_previous_text=False` | 防止幻覺/重複 | ⭐⭐⭐⭐⭐ |
-| `initial_prompt` 領域提示 | 引導術語偏好 | ⭐⭐ |
+| `initial_prompt` 語言適配 | 引導術語偏好 | ⭐⭐ |
 | large-v3-turbo + MLX | 速度與精度兼顧 | ⭐⭐⭐⭐ |
 | OpenCC s2twp | 簡→繁台灣用語 | ⭐⭐⭐ |
+| Claude Agent 翻譯 | 高品質跨語言翻譯 | ⭐⭐⭐⭐ |
+
+### 🔧 Python 環境
+
+| | 路徑 |
+|---|------|
+| **虛擬環境** | `~/.claude/.venv/` |
+| **Python 執行檔** | `~/.claude/.venv/bin/python` |
+| **Whisper 模型快取** | `~/.cache/huggingface/hub/` |
+
+> 使用 `~/.claude/.venv` 全域虛擬環境，讓 skill 可在任何專案目錄下使用，無需每個專案單獨安裝。
 
 ## 📂 輸出檔案
 
@@ -154,10 +192,13 @@ YouTube URL  ──→  yt-dlp 擷取       ──→  transcript.md  ──→ 
 
 ```
 output/2026-03-16_團隊週會/
-├── transcript.md        # 含時間戳的逐字稿
+├── transcript.md        # 含時間戳的逐字稿（繁體中文）
 ├── transcript.txt       # 純文字逐字稿（給 LLM 摘要用）
+├── transcript_{lang}.md # 原文逐字稿（若非中文音訊）
+├── transcript_{lang}.txt# 原文純文字（若非中文音訊）
 ├── whisper_raw.json     # Whisper 完整輸出備份
-└── summary.md           # 結構化摘要
+├── summary.md           # 結構化摘要（繁體中文）
+└── summary_{lang}.md    # 原文摘要（若雙語模式）
 ```
 
 ## ⚡ 效能參考
@@ -178,9 +219,11 @@ MacBook Pro M4 Pro 24GB 實測：
 |------|------|
 | yt-dlp 403 Forbidden | `brew upgrade yt-dlp`（版本太舊） |
 | Whisper 記憶體不足 | 改用較小模型 `whisper-base` |
-| pip install 失敗 (PEP 668) | 使用虛擬環境 `python3 -m venv .venv` |
+| pip install 失敗 (PEP 668) | 使用全域 venv `~/.claude/.venv` — 執行 `bash install.sh` |
 | 輸出出現簡體字 | 確認 OpenCC 有安裝且使用 s2twp |
 | 出現重複/無意義文字 | 確認 `condition_on_previous_text=False` |
+| 找不到 Python/mlx_whisper | 確認 `~/.claude/.venv/bin/python` 存在 — 執行 `bash install.sh` |
+| 英文影片產出亂碼中文 | 不要對非中文音訊使用 `language="zh"` — 改用 `--bilingual` |
 
 </details>
 

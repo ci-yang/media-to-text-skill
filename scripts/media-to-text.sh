@@ -11,26 +11,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 DATE_TAG="$(date +%Y-%m-%d)"
 
-# Python detection priority:
-# 1. Active venv ($VIRTUAL_ENV)
-# 2. .venv/ in current working directory
-# 3. .venv/ in repo directory
-# 4. System python3
-find_python() {
-    if [[ -n "${VIRTUAL_ENV:-}" && -x "${VIRTUAL_ENV}/bin/python" ]]; then
-        echo "${VIRTUAL_ENV}/bin/python"
-    elif [[ -x ".venv/bin/python" ]]; then
-        echo ".venv/bin/python"
-    elif [[ -x "${REPO_DIR}/.venv/bin/python" ]]; then
-        echo "${REPO_DIR}/.venv/bin/python"
-    elif command -v python3 >/dev/null 2>&1; then
-        echo "python3"
-    else
-        return 1
-    fi
-}
-
-PYTHON="$(find_python)" || fail "找不到 Python，請先執行: bash ${REPO_DIR}/install.sh"
+# Python 環境：固定使用 ~/.claude/.venv
+# WHY: 此 skill 可在任何專案目錄下觸發，使用全域 venv 避免重複安裝
+VENV_DIR="$HOME/.claude/.venv"
+PYTHON="${VENV_DIR}/bin/python"
 
 # ── 輔助函式 ──────────────────────────────────────────────
 info()  { echo "   $*"; }
@@ -70,11 +54,12 @@ FFMPEG="$(command -v ffmpeg 2>/dev/null || true)"
 
 [[ -n "$YTDLP" ]]  && ok "yt-dlp: ${YTDLP}"  || fail "找不到 yt-dlp，請執行: brew install yt-dlp"
 [[ -n "$FFMPEG" ]]  && ok "ffmpeg: ${FFMPEG}"  || fail "找不到 ffmpeg，請執行: brew install ffmpeg"
-[[ -x "$PYTHON" ]]  && ok "Python: ${PYTHON}"  || fail "找不到 Python 執行檔: ${PYTHON}"
+[[ -d "$VENV_DIR" ]] && ok "Python venv: ${VENV_DIR}/" || fail "找不到 Python venv: ${VENV_DIR}，請先執行: bash ${REPO_DIR}/install.sh"
+[[ -x "$PYTHON" ]]  || fail "找不到 Python 執行檔: ${PYTHON}"
 
 # 檢查 Python 套件
-"$PYTHON" -c "import mlx_whisper" 2>/dev/null || fail "缺少 mlx_whisper，請執行: pip install mlx-whisper"
-"$PYTHON" -c "import opencc"      2>/dev/null || fail "缺少 opencc，請執行: pip install opencc-python-reimplemented"
+"$PYTHON" -c "import mlx_whisper" 2>/dev/null || fail "缺少 mlx_whisper，請執行: ${VENV_DIR}/bin/pip install mlx-whisper"
+"$PYTHON" -c "import opencc"      2>/dev/null || fail "缺少 opencc，請執行: ${VENV_DIR}/bin/pip install opencc-python-reimplemented"
 
 # ── 2. 輸入辨識與音訊取得 ─────────────────────────────────
 WORK_DIR="$(mktemp -d)"

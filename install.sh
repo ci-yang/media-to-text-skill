@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+VENV_DIR="$HOME/.claude/.venv"
+
 echo "📦 Installing Media-to-Text dependencies..."
 echo ""
 
@@ -11,22 +13,22 @@ if [[ "$(uname)" != "Darwin" ]]; then
     echo ""
 fi
 
-# Create venv if not exists
-if [[ ! -d ".venv" ]]; then
-    echo "🔧 Creating Python virtual environment..."
-    python3 -m venv .venv
-    echo "✅ Created .venv/"
+# Create venv in ~/.claude/.venv if not exists
+# WHY: Global location so the skill works from any project directory
+if [[ ! -d "$VENV_DIR" ]]; then
+    echo "🔧 Creating Python virtual environment at ${VENV_DIR}..."
+    mkdir -p "$(dirname "$VENV_DIR")"
+    python3 -m venv "$VENV_DIR"
+    echo "✅ Created ${VENV_DIR}/"
 else
-    echo "✅ .venv/ already exists"
+    echo "✅ ${VENV_DIR}/ already exists"
 fi
-
-source .venv/bin/activate
 
 # Install Python dependencies
 echo ""
 echo "📥 Installing Python packages..."
-pip install --upgrade pip -q
-pip install mlx-whisper opencc-python-reimplemented -q
+"${VENV_DIR}/bin/pip" install --upgrade pip -q
+"${VENV_DIR}/bin/pip" install mlx-whisper opencc-python-reimplemented -q
 echo "✅ Python packages installed"
 
 # Check system dependencies
@@ -38,12 +40,14 @@ command -v ffmpeg  >/dev/null 2>&1 && echo "✅ ffmpeg: $(command -v ffmpeg)"   
 # Verify
 echo ""
 echo "🔍 Verifying installation..."
-.venv/bin/python -c "import mlx_whisper; print('✅ mlx-whisper')" 2>/dev/null || echo "❌ mlx-whisper import failed"
-.venv/bin/python -c "import opencc; print('✅ opencc')" 2>/dev/null || echo "❌ opencc import failed"
+"${VENV_DIR}/bin/python" -c "import mlx_whisper; print('✅ mlx-whisper')" 2>/dev/null || echo "❌ mlx-whisper import failed"
+"${VENV_DIR}/bin/python" -c "import opencc; print('✅ opencc')" 2>/dev/null || echo "❌ opencc import failed"
 
 echo ""
 echo "🎉 Installation complete!"
 echo ""
+echo "Python venv: ${VENV_DIR}/"
+echo "Whisper model will be auto-downloaded on first run to ~/.cache/huggingface/hub/"
+echo ""
 echo "Usage:"
-echo "  source .venv/bin/activate"
 echo "  bash scripts/media-to-text.sh <video-url-or-audio-path>"
